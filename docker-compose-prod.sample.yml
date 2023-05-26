@@ -2,7 +2,7 @@ version: "3.9"
 services:
   web:
     build: .
-    command: gunicorn core.wsgi -b 0.0.0.0:8000 --timeout 90
+    command: /code/entrypoint.sh
     volumes:
       - .:/code
     ports:

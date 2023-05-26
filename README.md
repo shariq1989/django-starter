@@ -28,11 +28,50 @@ $ cd django-starter
 Build the Docker image, run the container, and execute the standard commands within Docker.
 
 ```
-$ docker-compose up -d --build
-$ docker-compose exec web python manage.py migrate
-$ docker-compose exec web python manage.py createsuperuser
+docker-compose up -d --build
+
+docker-compose exec web python manage.py migrate
+
+docker-compose exec web python manage.py createsuperuser
+
 # Load the site at http://127.0.0.1:8000
 ```
+
+View logs
+
+```
+sudo docker logs --follow django-starter-web-1
+```
+
+Stop the containers
+
+```
+docker-compose down --remove-orphans
+```
+
+### Production
+
+Run the Docker image
+
+```
+sudo docker compose -f docker-compose-prod.yml up --build -d
+```
+
+View running containers
+
+```sudo docker ps```
+
+View logs
+
+```sudo docker logs --follow django-starter-web-1```
+
+## Nginx
+
+View status
+```sudo systemctl status nginx```
+
+Restart Nginx
+```sudo systemctl restart nginx```
 
 ## Next Steps
 
