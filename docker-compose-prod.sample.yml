@@ -1,3 +1,4 @@
+# largely based on https://testdriven.io/blog/dockerizing-django-with-postgres-gunicorn-and-nginx/
 version: "3.9"
 services:
   web:
@@ -5,22 +6,66 @@ services:
     command: /code/entrypoint.sh
     volumes:
       - .:/code
+      - static_volume:/home/app/web/staticfiles
     ports:
       - "8000:8000"
     depends_on:
       - db
+    labels:
+      - "traefik.enable=true"
+      # changes the host to the actual domain
+      - "traefik.http.routers.django.rule=Host(`django-traefik.site.com`)" # TODO
+      # enables HTTPS
+      - "traefik.http.routers.django.tls=true"
+      # sets the certificate issuer as Let's Encrypt
+      - "traefik.http.routers.django.tls.certresolver=letsencrypt"
     environment:
       # python3 -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())'
-      - "DJANGO_SECRET_KEY=50characterstring!"
+      - "DJANGO_SECRET_KEY=insecure_NEEDS_50_CHARACTER_STRING!"
       # [::1] is the loopback address in ipv6, the equivalent would be 127.0.0.1 in ipv4.
       - "DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1,[::1]"
       - "DJANGO_SECURE_SSL_REDIRECT=False"
-      - "CSRF_TRUSTED_ORIGINS=http://site.com,https://site.com"
+      - "CSRF_TRUSTED_ORIGINS=http://site.com,https://site.com" # TODO
   db:
     image: postgres:13
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     environment:
       - "POSTGRES_HOST_AUTH_METHOD=trust"
+  traefik: # new
+    build:
+      context: .
+      dockerfile: Dockerfile.traefik
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./traefik-public-certificates:/certificates"
+    labels:
+      - "traefik.enable=true"
+      # defines the dashboard host
+      - "traefik.http.routers.dashboard.rule=Host(`dashboard-django-traefik.site.com`)" # TODO
+      # enables https
+      - "traefik.http.routers.dashboard.tls=true"
+      # sets the certificate resolver to Let's Encrypt
+      - "traefik.http.routers.dashboard.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.dashboard.service=api@internal"
+      # enables HTTP BasicAuth middleware
+      - "traefik.http.routers.dashboard.middlewares=auth"
+      # defines the username and hashed password for logging in
+      # TODO: update password using
+      # echo $(htpasswd -nb testuser password) | sed -e s/\\$/\\$\\$/g
+      - "traefik.http.middlewares.auth.basicauth.users=djadmin:$$apr1$$kipJ4J0V$$J5La5NlRrVU4Pckq1UKIQ."
+  nginx:
+    build: ./nginx
+    volumes:
+      - static_volume:/home/app/web/staticfiles
+    ports:
+      - "1337:80"
+    depends_on:
+      - web
 volumes:
   postgres_data:
+  static_volume:
+  traefik-public-certificates:

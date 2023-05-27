@@ -1,0 +1,34 @@
+[entryPoints]
+  [entryPoints.web] # sets the entry point for our insecure HTTP application to port 80
+    address = ":80"
+  [entryPoints.web.http]
+    [entryPoints.web.http.redirections]
+      [entryPoints.web.http.redirections.entryPoint] # redirects all insecure requests to the secure port
+        to = "websecure"
+        scheme = "https"
+
+  [entryPoints.websecure] # sets the entry point for our secure HTTPS application to port 443
+    address = ":443"
+
+[accessLog]
+
+[api]
+dashboard = true # enables the monitoring dashboard
+
+[providers]
+  [providers.docker]
+    exposedByDefault = false # unexposes all services
+
+[certificatesResolvers.letsencrypt.acme]
+  # TODO: Update email address
+  email = "your@site.com"
+  storage = "/certificates/acme.json"
+  [certificatesResolvers.letsencrypt.acme.httpChallenge]
+    entryPoint = "web"
+
+# TODO
+#   Assuming you updated your domain name's DNS records,
+#   create two new A records that both point at your compute instance's public IP:
+#
+#   django-traefik.your-domain.com - for the web service
+#   dashboard-django-traefik.your-domain.com - for the Traefik dashboard

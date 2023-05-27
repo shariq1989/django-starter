@@ -14,8 +14,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = env("DJANGO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
+# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool("DJANGO_DEBUG", default=False)
-ALLOWED_HOSTS = env("DJANGO_ALLOWED_HOSTS").split(",")
+ALLOWED_HOSTS = env('DJANGO_ALLOWED_HOSTS', default=[])
 
 # only need this in production
 if not DEBUG:

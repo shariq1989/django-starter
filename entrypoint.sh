@@ -13,4 +13,4 @@ echo "Django deployment checks"
 python /code/manage.py check --deploy
 
 # Start the Gunicorn server
-gunicorn core.wsgi -b 0.0.0.0:8000 --timeout 90
+gunicorn django_project.wsgi -b 0.0.0.0:8000 --timeout 90

@@ -54,7 +54,7 @@ docker-compose down --remove-orphans
 Run the Docker image
 
 ```
-sudo docker compose -f docker-compose-prod.yml up --build -d
+docker-compose -f docker-compose.prod.yml up -d --build
 ```
 
 View running containers
